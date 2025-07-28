@@ -51,7 +51,7 @@ An advanced, feature-rich web interface for the Higgs Audio v2 model with profes
 ### Quick Start
 ```bash
 # 1. Clone the repository
-git clone https://github.com/YOUR_USERNAME/higgs-audio-v2-enhanced-webui.git
+git clone https://github.com/psdwizzard/higgs-audio-v2-enhanced-webui.git
 cd higgs-audio-v2-enhanced-webui
 
 # 2. Set up virtual environment (Windows)
@@ -239,7 +239,7 @@ This project is based on the original Higgs Audio v2 model. Please see the origi
 
 - [Original Higgs Audio v2](https://huggingface.co/bosonai/higgs-audio-v2-generation-3B-base)
 - [Gradio Documentation](https://gradio.app/docs/)
-- [Issues & Bug Reports](https://github.com/YOUR_USERNAME/higgs-audio-v2-enhanced-webui/issues)
+- [Issues & Bug Reports](https://github.com/psdwizzard/higgs-audio-v2-enhanced-webui/issues)
 
 ---
 
