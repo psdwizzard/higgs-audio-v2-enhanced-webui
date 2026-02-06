@@ -1,0 +1,1 @@
+Seriously, my shoes don't go out of fashion that fast. So how do they do all this? How does this  black magic work? Well, when the AI technique looks at your video, first, what part of the appearance  is lighting and what is material? It tries to separate the two into something we call an albedo  map.

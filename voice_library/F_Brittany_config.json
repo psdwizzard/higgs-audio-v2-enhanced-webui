@@ -1,0 +1,14 @@
+{
+  "temperature": 0.8,
+  "max_new_tokens": 1280,
+  "seed": 12345,
+  "top_k": 50,
+  "top_p": 0.95,
+  "min_p": 0,
+  "repetition_penalty": 1,
+  "ras_win_len": 7,
+  "ras_win_max_num_repeat": 2,
+  "do_sample": true,
+  "description": "An expressive female audiobook narrator.",
+  "tags": []
+}

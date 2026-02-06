@@ -1290,6 +1290,20 @@ def generate_longform(
     # Initialize model if not already done
     initialize_model()
     
+    # Check if a Voice Library voice is selected and load its config
+    use_voice_library_config = False
+    voice_config = None
+    if voice_choice == "Predefined Voice" and voice_prompt and voice_prompt.startswith("👤 "):
+        voice_name = voice_prompt[2:]  # Remove "👤 " prefix
+        voice_config = load_voice_config(voice_name)
+        use_voice_library_config = True
+        print(f"🎤 Using Voice Library config for '{voice_name}': temp={voice_config['temperature']}, tokens={voice_config['max_new_tokens']}")
+        
+        # Override parameters with Voice Library config
+        temperature = voice_config['temperature']
+        max_new_tokens = voice_config['max_new_tokens']
+        # Note: seed from UI is still used for consistency
+    
     # Set seed for reproducibility
     if seed > 0:
         torch.manual_seed(seed)
@@ -1398,8 +1412,18 @@ def generate_longform(
                     Message(role="user", content=chunk)
                 ]
             
-            # Generate audio with optimizations
-            output = optimized_generate_audio(messages, max_new_tokens, temperature, use_cache=True)
+            # Generate audio with optimizations - use Voice Library config if available
+            if use_voice_library_config and voice_config:
+                min_p_value = voice_config['min_p'] if voice_config['min_p'] > 0 else None
+                output = optimized_generate_audio(
+                    messages, voice_config['max_new_tokens'], voice_config['temperature'], 
+                    voice_config['top_k'], voice_config['top_p'], min_p_value, 
+                    voice_config['repetition_penalty'], voice_config['ras_win_len'], 
+                    voice_config['ras_win_max_num_repeat'], voice_config['do_sample'], 
+                    use_cache=True
+                )
+            else:
+                output = optimized_generate_audio(messages, max_new_tokens, temperature, use_cache=True)
             
             if voice_choice == "Smart Voice" and i == 0:
                 # Save first chunk's audio and text for reference
@@ -1499,6 +1523,8 @@ def generate_multi_speaker(
     speaker_first_refs = {}  # {speaker_id: (audio_path, text_content)}
     # NEW: Store uploaded audio and transcription for each speaker (for Upload Voices)
     uploaded_voice_refs = {}  # {speaker_id: (audio_path, transcription)}
+    # NEW: Store voice configurations for each speaker (for Predefined Voices)
+    voice_configs = {}  # {speaker_id: config_dict}
     
     try:
         if voice_method == "Upload Voices":
@@ -1537,6 +1563,13 @@ def generate_multi_speaker(
                         if ref_audio_path and os.path.exists(ref_audio_path):
                             voice_refs[speaker_key] = ref_audio_path
                             print(f"📁 Setup voice reference for {speaker_key}: {ref_audio_path}")
+                            
+                            # Load voice configuration for this speaker
+                            voice_name_clean = voice_name[2:] if voice_name.startswith("👤 ") else voice_name
+                            voice_config = load_voice_config(voice_name_clean)
+                            voice_configs[speaker_key] = voice_config
+                            print(f"🎛️ Loaded voice config for {speaker_key}: temp={voice_config['temperature']}, tokens={voice_config['max_new_tokens']}, top_k={voice_config['top_k']}")
+                            
                             # Ensure txt file exists - use robust extension handling
                             txt_path = robust_txt_path_creation(ref_audio_path)
                             
@@ -1564,7 +1597,8 @@ def generate_multi_speaker(
         # Process transcript line by line
         lines = transcript.split('\n')
         
-        for line in lines:
+        for line_idx, line in enumerate(lines):
+            original_line = line  # Keep original line for index lookup
             line = line.strip()
             if not line:
                 continue
@@ -1636,8 +1670,21 @@ def generate_multi_speaker(
                 
                 print(f"📝 Generating audio for: '{text_content}'")
                 
-                # Generate audio with optimizations
-                output = optimized_generate_audio(messages, max_new_tokens, temperature, use_cache=False)
+                # Generate audio with optimizations - use voice-specific config if available
+                if voice_method == "Predefined Voices" and speaker_id in voice_configs:
+                    # Use the voice's individual configuration
+                    config = voice_configs[speaker_id]
+                    min_p_value = config['min_p'] if config['min_p'] > 0 else None
+                    print(f"🎛️ Using {speaker_id} voice config: temp={config['temperature']}, tokens={config['max_new_tokens']}")
+                    output = optimized_generate_audio(
+                        messages, config['max_new_tokens'], config['temperature'], 
+                        config['top_k'], config['top_p'], min_p_value, 
+                        config['repetition_penalty'], config['ras_win_len'], 
+                        config['ras_win_max_num_repeat'], config['do_sample'], use_cache=False
+                    )
+                else:
+                    # Use global settings for Upload Voices or Smart Voice
+                    output = optimized_generate_audio(messages, max_new_tokens, temperature, use_cache=False)
                 
                 # IMPORTANT: Smart Voice consistency logic ONLY applies to Smart Voice mode
                 # For Upload Voices and Predefined Voices, we already have the voice references
@@ -1677,7 +1724,7 @@ def generate_multi_speaker(
                 # Add a small pause between different speakers (not between same speaker)
                 if len(full_audio) > 1:
                     # Check if this is a different speaker than the previous line
-                    prev_line_idx = lines.index(line) - 1
+                    prev_line_idx = line_idx - 1
                     if prev_line_idx >= 0:
                         prev_line = lines[prev_line_idx].strip()
                         if prev_line:

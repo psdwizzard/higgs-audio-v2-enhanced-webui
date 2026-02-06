@@ -211,3 +211,12 @@ result/
 
 # Ruff
 .ruff_cache/
+
+# Tool/IDE config directories
+.claude/
+.gradio/
+.supercli/
+.user
+
+# Windows artifacts
+nul

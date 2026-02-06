@@ -1,0 +1,14 @@
+{
+  "temperature": 0.95,
+  "max_new_tokens": 1024,
+  "seed": 12345,
+  "top_k": 94,
+  "top_p": 0.15,
+  "min_p": 0.15,
+  "repetition_penalty": 0.85,
+  "ras_win_len": 7,
+  "ras_win_max_num_repeat": 2,
+  "do_sample": true,
+  "description": "",
+  "tags": []
+}

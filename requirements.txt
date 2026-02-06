@@ -8,7 +8,8 @@ s3fs
 torchvision
 torchaudio
 json_repair
-pandas
+numpy<2.0
+pandas>=2.0.0
 pydantic
 vector_quantize_pytorch
 loguru

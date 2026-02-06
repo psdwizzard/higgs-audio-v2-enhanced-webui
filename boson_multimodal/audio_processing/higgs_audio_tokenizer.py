@@ -77,19 +77,28 @@ class HiggsAudioTokenizer(nn.Module):
         self.last_layer_semantic = last_layer_semantic
         self.device = device
         if semantic_techer == "hubert_base":
-            self.semantic_model = AutoModel.from_pretrained("facebook/hubert-base-ls960")
+            try:
+                self.semantic_model = AutoModel.from_pretrained("facebook/hubert-base-ls960", local_files_only=True)
+            except Exception:
+                self.semantic_model = AutoModel.from_pretrained("facebook/hubert-base-ls960")
             self.semantic_sample_rate = 16000
             self.semantic_dim = 768
             self.encoder_semantic_dim = 768
 
         elif semantic_techer == "wavlm_base_plus":
-            self.semantic_model = AutoModel.from_pretrained("microsoft/wavlm-base-plus")
+            try:
+                self.semantic_model = AutoModel.from_pretrained("microsoft/wavlm-base-plus", local_files_only=True)
+            except Exception:
+                self.semantic_model = AutoModel.from_pretrained("microsoft/wavlm-base-plus")
             self.semantic_sample_rate = 16000
             self.semantic_dim = 768
             self.encoder_semantic_dim = 768
 
         elif semantic_techer == "hubert_base_general":
-            self.semantic_model = AutoModel.from_pretrained("bosonai/hubert_base", trust_remote_code=True)
+            try:
+                self.semantic_model = AutoModel.from_pretrained("bosonai/hubert_base", trust_remote_code=True, local_files_only=True)
+            except Exception:
+                self.semantic_model = AutoModel.from_pretrained("bosonai/hubert_base", trust_remote_code=True)
             self.semantic_sample_rate = 16000
             self.semantic_dim = 768
             self.encoder_semantic_dim = 768
@@ -310,7 +319,10 @@ class HiggsAudioTokenizer(nn.Module):
 def load_higgs_audio_tokenizer(tokenizer_name_or_path, device="cuda"):
     is_local = os.path.exists(tokenizer_name_or_path)
     if not is_local:
-        tokenizer_path = snapshot_download(tokenizer_name_or_path)
+        try:
+            tokenizer_path = snapshot_download(tokenizer_name_or_path, local_files_only=True)
+        except Exception:
+            tokenizer_path = snapshot_download(tokenizer_name_or_path)
     else:
         tokenizer_path = tokenizer_name_or_path
     config_path = os.path.join(tokenizer_path, "config.json")

@@ -1,0 +1,14 @@
+{
+  "temperature": 0.55,
+  "max_new_tokens": 1024,
+  "seed": 12345,
+  "top_k": 50,
+  "top_p": 0.95,
+  "min_p": 0.02,
+  "repetition_penalty": 1.2,
+  "ras_win_len": 7,
+  "ras_win_max_num_repeat": 2,
+  "do_sample": true,
+  "description": "Just a heads up on this, Security has already given the all clear, we are not at risk and there was no evidence anyone was impacted by this.",
+  "tags": []
+}

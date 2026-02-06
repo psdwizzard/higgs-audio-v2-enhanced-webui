@@ -1,0 +1,14 @@
+{
+  "temperature": 0.75,
+  "max_new_tokens": 2048,
+  "seed": 12345,
+  "top_k": 50,
+  "top_p": 0.95,
+  "min_p": 0.03,
+  "repetition_penalty": 1,
+  "ras_win_len": 7,
+  "ras_win_max_num_repeat": 2,
+  "do_sample": true,
+  "description": "Spy thriller audiobook narrator.",
+  "tags": []
+}

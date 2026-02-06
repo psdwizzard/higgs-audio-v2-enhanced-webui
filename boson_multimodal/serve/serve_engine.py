@@ -207,14 +207,24 @@ class HiggsAudioServeEngine:
         self.model_name_or_path = model_name_or_path
         self.torch_dtype = torch_dtype
 
-        # Initialize model and tokenizer
-        self.model = HiggsAudioModel.from_pretrained(model_name_or_path, torch_dtype=torch_dtype).to(device)
-        logger.info(f"Loaded model from {model_name_or_path}, dtype: {self.model.dtype}")
+        # Initialize model and tokenizer (try local cache first to avoid network issues)
+        try:
+            self.model = HiggsAudioModel.from_pretrained(model_name_or_path, torch_dtype=torch_dtype, local_files_only=True).to(device)
+            logger.info(f"Loaded model from local cache: {model_name_or_path}")
+        except Exception:
+            logger.info(f"Model not in local cache, downloading from HuggingFace: {model_name_or_path}")
+            self.model = HiggsAudioModel.from_pretrained(model_name_or_path, torch_dtype=torch_dtype).to(device)
+        logger.info(f"Loaded model, dtype: {self.model.dtype}")
 
         if tokenizer_name_or_path is None:
             tokenizer_name_or_path = model_name_or_path
         logger.info(f"Loading tokenizer from {tokenizer_name_or_path}")
-        self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_name_or_path)
+        try:
+            self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_name_or_path, local_files_only=True)
+            logger.info(f"Loaded tokenizer from local cache")
+        except Exception:
+            logger.info(f"Tokenizer not in local cache, downloading from HuggingFace")
+            self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_name_or_path)
 
         logger.info(f"Initializing Higgs Audio Tokenizer")
         self.audio_tokenizer = load_higgs_audio_tokenizer(audio_tokenizer_name_or_path, device=device)
